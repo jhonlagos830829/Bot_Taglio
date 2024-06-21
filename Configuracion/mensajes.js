@@ -17,6 +17,7 @@ module.exports = Object.freeze({
     
     //Mensajes del flujo flujoProgramarCita
     NOMBRE_FLUJO_PROGRAMAR_CITA: '👩🏻 ¿Podría indicarme su *nombre completo* por favor?',
+    NOMBRE_ERRADO_FLUJO_PROGRAMAR_CITA: '👩🏻 Para agendar su cita necesitamos por lo menos *un nombre y un apellido*',
     MENSAJE_CALENDARIO_OCUPADO_FLUJO_PROGRAMAR_CITA: '👩🏻 Por favor excúseme, en este momento *estoy agendando una cita para otro cliente*, debo terminar para saber que turnos quedan disponibles',
     MENSAJE_INFORMAR_DISPONIBLE_FLUJO_PROGRAMAR_CITA: '👩🏻 ¿Desea que le *informe cuando esté disponible* y pueda agendar su cita?\n\n_Por favor responda con una de las siguientes opciones:_\n\n👉🏼 Sí\n👉🏼 No',
     MENSAJE_AGENDA_DISPONIBLE_FLUJO_PROGRAMAR_CITA: '👩🏻 Apreciado cliente, ya me encuentro disponible y puedo agendar su cita',

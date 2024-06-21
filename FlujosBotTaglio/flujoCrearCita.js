@@ -4,7 +4,7 @@ const { delay } = require('@whiskeysockets/baileys')
 //////////////////////////////////////// FUNCIONES ELABORADAS
 
 const conversacion = require('../Funciones/conversacion.js')
-const registrarConversacion = require('../Funciones/registrarConversacion.js')
+const cita = require('../Funciones/cita.js')
 const mensajes = require('../Configuracion/mensajes')
 const configurar = require('../Funciones/configuracion.js')
 const calendarioGoogle = require('../Funciones/google/calendarioGoogle.js')
@@ -53,11 +53,11 @@ module.exports = flujoCrearCita = addKeyword(ExpRegFlujo, { regex: true })
             //Enviar mensaje de espera al cliente
             await ctxFn.flowDynamic(mensajes.MENSAJE_FLUJO_CREAR_CITA)
             
-            //Declaración de variables
-            let cita = await calendarioGoogle.crearCita('Corte para ' + cliente_cita, fecha_cita)
+            //Crear la cita y almacenar el resultado
+            let citaCalendario = await calendarioGoogle.crearCita(/*'Corte para ' + */cliente_cita + ' ' + ctx.from, fecha_cita)
 
             //Registrar la cita en la base de datos
-            await registrarConversacion.guardarCita(ctx, cliente_cita, fecha_cita, cita.data.id, 'Pendiente')
+            await cita.Guardar(ctx, cliente_cita, fecha_cita, citaCalendario.data.id, 'Pendiente')
 
             //Enviar mensaje de notificación de nueva cita creada
             await ctxFn.provider.sendText(configuracion.NUMERO_NOTIFICAR_CITA, mensajes.MENSAJE_NOTIFICACION_NUEVA_CITA + '\n\n' + '*Fecha:* ' + fechas.fechaHoraLegible(fecha_cita) + '\n*Cliente:* ' + cliente_cita)
@@ -66,7 +66,7 @@ module.exports = flujoCrearCita = addKeyword(ExpRegFlujo, { regex: true })
             await delay(1000)
 
             //Registrar la conversación
-            await conversacion.Guardar(ctx, mensajes.MENSAJE_RADICADO_FLUJO_CREAR_CITA + ' ' + cita.data.id)
+            await conversacion.Guardar(ctx, mensajes.MENSAJE_RADICADO_FLUJO_CREAR_CITA + ' ' + citaCalendario.data.id)
 
             //Enviar mensaje de confirmación al cliente
             ctxFn.flowDynamic(mensajes.MENSAJE_RADICADO_FLUJO_CREAR_CITA)
@@ -75,7 +75,7 @@ module.exports = flujoCrearCita = addKeyword(ExpRegFlujo, { regex: true })
             await delay(1000)
 
             //Enviar mensaje de confirmación al cliente
-            ctxFn.flowDynamic(cita.data.id)
+            ctxFn.flowDynamic(citaCalendario.data.id)
 
             //Realizar una pausa de 1 segundo
             await delay(1000)
@@ -99,7 +99,7 @@ module.exports = flujoCrearCita = addKeyword(ExpRegFlujo, { regex: true })
         } catch (error) {
 
             //Mostrar el mensaje de error en la consola
-            console.log('Error al registrar la conversación en el flujo flujoProgramarCita, el sistema respondió: ' + error)
+            console.log('Error al registrar la conversación en el flujo flujoCrearCita, el sistema respondió: ' + error)
 
         }
 

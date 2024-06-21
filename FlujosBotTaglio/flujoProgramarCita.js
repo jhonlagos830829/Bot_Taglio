@@ -21,7 +21,7 @@ const flujoCrearCita = require('./flujoCrearCita')
 ////////////////////////////////////////////////////////////////////////////////
 
 const ExpRegCita = '/((progra[mar]*|a[gj]end[arem]*|(apart[arem]*))[a-z ]*([cs]ita|turno)*)/gmi';
-const ExpRegNombre = new RegExp("[a-z áéíóúÁÉÍÓÚñÑ]{4,}", "i");
+const ExpRegNombre = new RegExp("[a-z áéíóúÁÉÍÓÚñÑ]{3,} [a-z áéíóúÁÉÍÓÚñÑ]{3,}", "i");
 const ExpRegRespuestas = new RegExp("[h]*o[yi]|ma[ñn]ana|pasado ma[ñn]ana", "i");
 const ExpRegConfirmarTurno = new RegExp("^S[íiIÍ]+$|^N[oóOÓ]$|^Can[cs]el[ar]*$", "i");
 const ExpRegConfirmarAfirmativo = new RegExp("^S[íiIÍ]+$", "i");
@@ -85,10 +85,10 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
             try {
 
                 //Registrar la conversación
-                await conversacion.Guardar(ctx, mensajes.ARGUMENTO_RESPUESTA_INVALIDA + '\n\n' + mensajes.NOMBRE_FLUJO_PROGRAMAR_CITA)
+                await conversacion.Guardar(ctx, mensajes.NOMBRE_ERRADO_FLUJO_PROGRAMAR_CITA + '\n\n' + mensajes.NOMBRE_FLUJO_PROGRAMAR_CITA)
 
                 //Solicitar una respuesta valida
-                return ctxFn.fallBack(mensajes.ARGUMENTO_RESPUESTA_INVALIDA + '\n\n' + mensajes.NOMBRE_FLUJO_PROGRAMAR_CITA)
+                return ctxFn.fallBack(mensajes.NOMBRE_ERRADO_FLUJO_PROGRAMAR_CITA + '\n\n' + mensajes.NOMBRE_FLUJO_PROGRAMAR_CITA)
 
             } catch (error) {
 
@@ -611,12 +611,15 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
                 }
                 else{
 
+
+                    //### RECORRER A PARTIR DE AQUI LOS TURNOS SEPARADOS POR COMA QUE HAYA SELECCIONADO EL CLIENTE
+
                     //Guardar en el estado global de la conversación el turno elegido
                     ctxFn.state.update({turno_elegido_cliente: ctx.body})
 
                     //Armar los detalles de la cita
                     //let detallesCita = '\n\n*' + DiaCita + '* ' + fechas.fechaLegible(FechaCita) + " a las *" + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == ctx.body)['hora']) + "*"
-                    let detallesCita = '\n\n el próximo *' + new Date(FechaCita).toLocaleDateString('es-es', { weekday:"long", year:"numeric", month:"long", day:"numeric"}) + "* a las *" + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == ctx.body)['hora']) + "*"
+                    let detallesCita = '\n\nEl próximo *' + new Date(FechaCita).toLocaleDateString('es-es', { weekday:"long", year:"numeric", month:"long", day:"numeric"}) + "* a las *" + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == ctx.body)['hora']) + "*"
 
                     //Guardar en el estado global de la conversación el turno elegido
                     ctxFn.state.update({detalles_cita: detallesCita})

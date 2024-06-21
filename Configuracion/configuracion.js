@@ -13,8 +13,9 @@ module.exports = Object.freeze({
     NUMERO_NOTIFICAR_CITA: '573013584693' + '@s.whatsapp.net', //
     TABLA_CONVERSACIONES: 'tg-conversaciones',
     TABLA_CLIENTES: 'tg-clientes',
+    TABLA_CITAS: 'tg-citas',
     URL_BUSCAR_CLIENTE: 'tg-clientes?filters[numeroWhatsapp][$contains]=',
-    URL_BUSCAR_CITA: 'lb-citas?filters[idCalendarioCita][$eq]=',
+    URL_BUSCAR_CITA: 'tg-citas?filters[idCalendarioCita][$eq]=',
     TABLA_SOLICITUDES_NOTIFICACION_CLIENTES: 'lb-clientes-notificars',
     URL_OBTENER_NOTIFICACIONES_PENDIENTES: 'lb-clientes-notificars?filters[notificado][$eq]=false',
 
