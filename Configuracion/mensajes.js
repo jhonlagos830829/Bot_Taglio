@@ -26,7 +26,7 @@ module.exports = Object.freeze({
     MENSAJE_CONSULTANDO_AGENDA_FLUJO_PROGRAMAR_CITA: '👩🏻 Un momento por favor, voy a consultar la agenda...',
     TURNOS_DISPONIBLES_FLUJO_PROGRAMAR_CITA: 'Para el próximo *{FECHA_CITA}* tenemos los siguientes turnos disponibles:',
     NO_HAY_TURNOS_DISPONIBLES_FLUJO_PROGRAMAR_CITA: '👩🏻 Desafortunadamente *no tengo turnos disponibles* para el día ',
-    NUMERO_TURNO_FLUJO_PROGRAMAR_CITA: '👩🏻 Por favor envíeme *el número* del turno que desea.\n\nSi no desea ninguno de los turnos disponibles, envíeme la palabra *Cancelar*',
+    NUMERO_TURNO_FLUJO_PROGRAMAR_CITA: '👩🏻 Por favor envíeme *el número* del turno que desea.\n\n_Si desea agendar *más de un turno* por favor envíenos los números de los turnos *separados por coma* por ejemplo *12,13,14*_\n\nSi no desea ninguno de los turnos disponibles, envíeme la palabra *Cancelar*',
     MENSAJE_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA: '👩🏻 *Le confirmo*\n\nDesea programar su cita para:',
     MENU_OPCIONES_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA: '_Por favor responda con una de las siguientes opciones:_\n\n👉🏼 Sí\n👉🏼 No\n👉🏼 Cancelar',
     

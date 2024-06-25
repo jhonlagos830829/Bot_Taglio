@@ -473,7 +473,7 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
             TurnosDisponibles = ""
 
             //Reinicializar la variable que contendrá los turnos disponibles con los que se realizará la expresión regular
-            OpcionesTurnos = '^[ck]an[cs]ela[r]*$|'
+            OpcionesTurnos = '^[ck]an[cs]ela[r]*$|\\b('
 
             //Si hay turnos disponibles
             if(HorarioDiaCita.length > 0 && HorarioDiaCita.filter(i => i['estado'] == "Disponible").length > 0){
@@ -488,7 +488,7 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
                         TurnosDisponibles = TurnosDisponibles + "\n\n👉🏼 *" + cita['turno'] + "*. _" + fechas.horaAMPM(cita['hora']) + '_'
 
                         //Armar la cadena de turnos para la expresión regular de validación
-                        OpcionesTurnos = OpcionesTurnos + '^' + cita['turno'] + '$|'
+                        OpcionesTurnos = OpcionesTurnos + cita['turno'] + ',|'
 
                     };
 
@@ -497,7 +497,10 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
                 //Remover el último separador para que no ingrese cualquier caracter en la expresion regular
                 OpcionesTurnos = OpcionesTurnos.slice(0, -1)
 
-                console.log('Los tunos disponibles son: ' + OpcionesTurnos)
+                //Agregar el ) para cerrar el grupo de opciones en la expresión regular
+                OpcionesTurnos = OpcionesTurnos + ')'
+
+                //console.log('Los tunos disponibles son: ' + OpcionesTurnos)
                 
                 //Guardar en el estado global de la conversación los turnos disponibles
                 ctxFn.state.update({turnosDisponibles: TurnosDisponibles})
@@ -567,7 +570,7 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
         }
 
     })
-    .addAnswer(mensajes.NUMERO_TURNO_FLUJO_PROGRAMAR_CITA, {delay:2000, capture: true}, async (ctx, ctxFn) => {
+    .addAnswer(mensajes.NUMERO_TURNO_FLUJO_PROGRAMAR_CITA, {delay:1000, capture: true}, async (ctx, ctxFn) => {
 
         //Registrar el inicio de la conversación
         try {
@@ -580,7 +583,7 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
             const ExpRegOpcionCancelar = new RegExp('^[ck]an[cs]ela[r]*$', "i");
 
             //Si la respuesta no coincide con la expresión regular
-            if(ExpRegOpcionesTurnos.test(ctx.body) == false){
+            if(ExpRegOpcionesTurnos.test(ctx.body + ',') == false){
 
                 //Registrar la conversación
                 await conversacion.Guardar(ctx, mensajes.ARGUMENTO_RESPUESTA_INVALIDA + '\n\n' + mensajes.TURNOS_DISPONIBLES_FLUJO_PROGRAMAR_CITA + TurnosDisponibles + '\n\n' + mensajes.NUMERO_TURNO_FLUJO_PROGRAMAR_CITA)
@@ -611,24 +614,49 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
                 }
                 else{
 
-
                     //### RECORRER A PARTIR DE AQUI LOS TURNOS SEPARADOS POR COMA QUE HAYA SELECCIONADO EL CLIENTE
+                    
+                    //Declaración de variable
+                    let respuestaCliente = ctx.body
 
-                    //Guardar en el estado global de la conversación el turno elegido
-                    ctxFn.state.update({turno_elegido_cliente: ctx.body})
+                    //Si la respuesta del cliente no termina con coma
+                    if(respuestaCliente.endsWith(',') == false){
 
+                        //Agregar la coma al final de la respuesta
+                        respuestaCliente = respuestaCliente + ','
+
+                    }
+                    
                     //Armar los detalles de la cita
-                    //let detallesCita = '\n\n*' + DiaCita + '* ' + fechas.fechaLegible(FechaCita) + " a las *" + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == ctx.body)['hora']) + "*"
-                    let detallesCita = '\n\nEl próximo *' + new Date(FechaCita).toLocaleDateString('es-es', { weekday:"long", year:"numeric", month:"long", day:"numeric"}) + "* a las *" + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == ctx.body)['hora']) + "*"
+                    let detallesCita = '\n\nEl próximo *' + new Date(FechaCita).toLocaleDateString('es-es', { weekday:"long", year:"numeric", month:"long", day:"numeric"}) + "* a las:"
+                    let horasTurnos = '\n\n'
+                    let turnosElegidos = ''
+
+                    //Recorrer los turnos solicitados
+                    for (let horaTurno of respuestaCliente.matchAll(OpcionesTurnos)){
+
+                        //Obtener las horas de los turnos
+                        horasTurnos = horasTurnos + '*' + fechas.horaAMPM(HorarioDiaCita.find(({ turno }) => turno == horaTurno[0].replace(',', ''))['hora']) + '*' + '\n'
+
+                        //Obtener los turnos elegidos para guardarlos en la variable de estado
+                        turnosElegidos = turnosElegidos + horaTurno[0]
+
+                    }
+                    
+                    //Eliminar la última coma para que al realizar el split no quede uno vacío
+                    turnosElegidos = turnosElegidos.slice(0, -1)
+                    
+                    //Guardar en el estado global de la conversación el turno elegido
+                    ctxFn.state.update({turno_elegido_cliente: turnosElegidos})
 
                     //Guardar en el estado global de la conversación el turno elegido
                     ctxFn.state.update({detalles_cita: detallesCita})
 
                     //Registrar la conversación
-                    await conversacion.Guardar(ctx, mensajes.MENSAJE_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA + detallesCita)
+                    await conversacion.Guardar(ctx, mensajes.MENSAJE_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA + detallesCita + horasTurnos)
 
                     //Enviar mensaje para la confirmación de la cita por parte del cliente
-                    ctxFn.flowDynamic(mensajes.MENSAJE_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA + detallesCita)
+                    ctxFn.flowDynamic(mensajes.MENSAJE_CONFIRMACION_TURNO_FLUJO_PROGRAMAR_CITA + detallesCita + horasTurnos)
 
                 }
                 
@@ -712,12 +740,26 @@ module.exports = flujoProgramarCita = addKeyword(ExpRegCita, { regex: true })
             else{
                 
                 //Obtener el turno elegido
-                let TurnoElegido = ctxFn.state.get('turno_elegido_cliente')
-                let fecha_cita = FechaCita + ' ' + HorarioDiaCita.find(({ turno }) => turno == TurnoElegido)['hora']
+                let TurnosElegidos = ctxFn.state.get('turno_elegido_cliente')
+                let fecha_cita = ''
 
+                for (let TurnoElegido of TurnosElegidos.split(',')){
+
+                    //console.log('Turno ' + TurnoElegido)
+
+                    fecha_cita = fecha_cita + FechaCita + ' ' + HorarioDiaCita.find(({ turno }) => turno == TurnoElegido)['hora'] + ','
+
+                }
+
+                //fecha_cita = FechaCita + ' ' + HorarioDiaCita.find(({ turno }) => turno == TurnosElegidos)['hora']
+
+                //Eliminar la última coma para que al dividirla no aparezca un valor vacío
+                fecha_cita = fecha_cita.slice(0, -1)
+                
                 //Guardar en el estado global de la conversación los datos de la cita
-                ctxFn.state.update({fecha_cita_cliente: FechaCita + ' ' + HorarioDiaCita.find(({ turno }) => turno == TurnoElegido)['hora']})
-
+                //ctxFn.state.update({fecha_cita_cliente: FechaCita + ' ' + HorarioDiaCita.find(({ turno }) => turno == TurnosElegidos)['hora']})
+                ctxFn.state.update({fecha_cita_cliente: fecha_cita})
+                console.log('Fechas de las citas ' + fecha_cita)
             }
 
         } catch (error) {
